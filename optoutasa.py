@@ -34,7 +34,7 @@ def print_asset_holding(algodclient, account, assetid):
 			break
 
 
-def mvasa(asset_id):
+def optoutasa(asset_id):
 	try:
 
 		pk = mnemonic.to_public_key(mnemonic_secret)
@@ -79,4 +79,4 @@ def mvasa(asset_id):
 
 for asset_id in asalist:
 	print (asset_id)
-	mvasa(asset_id)
+	optoutasa(asset_id)
