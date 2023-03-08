@@ -5,18 +5,14 @@ from algosdk.v2client import indexer, algod
 from algosdk.future import transaction
 import os
 import json
-import ipfshttpclient
 
 
-#api = ipfsapi.connect('127.0.0.1', 5001)
 MAINNET_NODE_API = "https://mainnet-api.algonode.cloud"
 MAINNET_INDEXER_API = "https://mainnet-idx.algonode.cloud"
 asalist = []
 
-def get_holders(indexer_client, asalist):
+def getasalist(indexer_client, asalist):
 
-
-	next_token = None
 
 	try:
 		payload = indexer_client.account_info(address="Add Your Address Here")
@@ -35,7 +31,7 @@ def get_holders(indexer_client, asalist):
 def doit():
 
 	idx_client = indexer.IndexerClient(indexer_token="", indexer_address=MAINNET_INDEXER_API)
-	get_holders(idx_client, asalist)
+	getasalist(idx_client, asalist)
 
 	print (asalist)
 
