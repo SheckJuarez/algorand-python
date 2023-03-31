@@ -15,6 +15,7 @@ _address = "XEVZQJCGTMPA62BZ6KDOVHWDM3LDB4KLD7WGBYH3E6XHCRLPBZQV2MBF6Y"
 def get_transactions(indexer_client, address):
 	try:
 		print(f"Starting...")
+		global found
 		next_token = None
 		payload = indexer_client.search_transactions_by_address(address, next_page=next_token)
 
@@ -37,6 +38,7 @@ def get_transactions(indexer_client, address):
 
 
 def doit():
+	global found
 	idx_client = indexer.IndexerClient(indexer_token="", indexer_address=MAINNET_INDEXER_API)
 	get_transactions(idx_client, _address)
 	if not found:
