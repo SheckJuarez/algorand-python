@@ -27,7 +27,7 @@ def get_transactions(indexer_client, address):
 					print ("########################################################################")
 					print ("########################################################################")
 
-					next_token = payload.get('next-token', None)
+			next_token = payload.get('next-token', None)
 			if next_token is None:
 				break
 
