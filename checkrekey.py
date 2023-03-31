@@ -27,6 +27,9 @@ def get_transactions(indexer_client, address):
 					print ("########################################################################")
 					print ("########################################################################")
 
+					next_token = payload.get('next-token', None)
+			if next_token is None:
+				break
 
 	except Exception as e:
 		print(e)
