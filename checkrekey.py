@@ -21,12 +21,11 @@ def get_transactions(indexer_client, address):
 
 		for transaction in payload["transactions"]:
 			if "rekey-to" in transaction:
-				if transaction["rekey-to"]:
-					found = True
-					print(json.dumps(transaction, indent=4))
-					print ("########################################################################")
-					print ("########################################################################")
-					print ("########################################################################")
+				found = True
+				print(json.dumps(transaction, indent=4))
+				print ("########################################################################")
+				print ("########################################################################")
+				print ("########################################################################")
 
 			next_token = payload.get('next-token', None)
 			if next_token is None:
