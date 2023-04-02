@@ -29,6 +29,26 @@ def getnfd(addr):
 	return nfd
 
 
+def check_rekey(indexer_client, address):
+	isRekeyed = False
+	try:
+		next_token = None
+		payload = indexer_client.search_transactions_by_address(address, next_page=next_token)
+
+		for transaction in payload["transactions"]:
+			if "rekey-to" in transaction:
+				isRekeyed = True
+
+			next_token = payload.get('next-token', None)
+			if next_token is None:
+				break
+
+	except Exception as e:
+		print(e)
+
+	return isRekeyed
+
+
 def get_holders(indexer_client, creator):
 	asalist = []
 	addresses = []
@@ -99,8 +119,9 @@ def load_holders(indexer_client):
 	for coll in collections:
 		holders = get_holders(indexer_client, coll)
 		for holder in holders:
-			if not holder in allholders:
-				allholders.append(holder)
+			if not check_rekey(indexer_client, holder):
+				if not holder in allholders:
+					allholders.append(holder)
 
 
 
@@ -108,9 +129,11 @@ def doit():
 	global found
 	idx_client = indexer.IndexerClient(indexer_token="", indexer_address=MAINNET_INDEXER_API)
 	load_holders(idx_client)
+	print (allholders)
 	while 1==1: #loop forever
+		print ("Checking Transactions")
 		get_transactions(idx_client, _maladdress)
-		time.sleep(30)
+		time.sleep(60)
 
 
 
