@@ -14,7 +14,7 @@ found = False
 _maladdress = "MVEKYHFLJ63UKDYGNKCJD7WO5KFJZFVFMJPSDAWLDIDP4LUP575YDOW6GI"
 senders = []
 
-collections = ['KVC4EZQTW7M3RQWJZZXVDJ7W6THDKK7SEOKAYYSXVBN3U6HD3KKNZ2QL4E','SNUAAVKRAB7S3LRZDDJOOW77U6UVZU333BCBKWF6F6SQAF5IPVWEJKCXHI','R4V3NQKUDJKQWV74JZWEVDNJ6HMHHZK253FGMRQHAE6RA5MAKXBCYVVLQE']
+collections = ['KVC4EZQTW7M3RQWJZZXVDJ7W6THDKK7SEOKAYYSXVBN3U6HD3KKNZ2QL4E','SNUAAVKRAB7S3LRZDDJOOW77U6UVZU333BCBKWF6F6SQAF5IPVWEJKCXHI','R4V3NQKUDJKQWV74JZWEVDNJ6HMHHZK253FGMRQHAE6RA5MAKXBCYVVLQE', 'KPK5CEWRXZAHJLLK6ZAG5K3PGLY6ZEJREBOVVFXWYWEYGINUZY5IT3GG3I', 'YXA6YCSG6HPFLMFB2HAIDJMPB7G463WA33H4Y44CABZ6CODIOWRMPD6USA', 'SKTLR35ZRFCPRZQJXB4H3ZYDRX3KE3CIIGSSFW4H755EHCQTZ5F7Q57K6U']
 allholders = []
 
 def getnfd(addr):
@@ -119,16 +119,18 @@ def load_holders(indexer_client):
 	for coll in collections:
 		holders = get_holders(indexer_client, coll)
 		for holder in holders:
-			if not check_rekey(indexer_client, holder):
-				if not holder in allholders:
-					allholders.append(holder)
+#			if not check_rekey(indexer_client, holder):
+			if not holder in allholders:
+				allholders.append(holder)
 
 
 
 def doit():
 	global found
+	global allholders
 	idx_client = indexer.IndexerClient(indexer_token="", indexer_address=MAINNET_INDEXER_API)
 	load_holders(idx_client)
+	allholders.append("TL3UWHREKHAIKDUEZMCND4SYJ2AJ4QFTOJONUBVJ3ZM3LUURLJCEGJ4H2Y")
 	print (allholders)
 	while 1==1: #loop forever
 		print ("Checking Transactions")
