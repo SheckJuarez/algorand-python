@@ -11,14 +11,16 @@ MAINNET_NODE_API = "https://mainnet-api.algonode.cloud"
 MAINNET_INDEXER_API = "https://mainnet-idx.algonode.cloud"
 found = False
 
-_maladdress = "MVEKYHFLJ63UKDYGNKCJD7WO5KFJZFVFMJPSDAWLDIDP4LUP575YDOW6GI"
+# for each added wallet in _maladdresses add another 0 entry in block_heights
+_maladdresses = ["MVEKYHFLJ63UKDYGNKCJD7WO5KFJZFVFMJPSDAWLDIDP4LUP575YDOW6GI",
+                 "NG7P2KCBIJBWK4YZE47F5XVYZDGCTZDYRJHKINFGFJKH6RATVFODV4LU2A"]
+block_heights = [0, 0]
+
 senders = []
 
 collections = ['KVC4EZQTW7M3RQWJZZXVDJ7W6THDKK7SEOKAYYSXVBN3U6HD3KKNZ2QL4E', 'SNUAAVKRAB7S3LRZDDJOOW77U6UVZU333BCBKWF6F6SQAF5IPVWEJKCXHI',
                'R4V3NQKUDJKQWV74JZWEVDNJ6HMHHZK253FGMRQHAE6RA5MAKXBCYVVLQE', 'R4V3NBVSRDR5UF3JNODCKBHO5IC6RG74SEJEOA3SVMB2XNQB6YBXGC3WF4']
 allholders = []
-
-block_height = 0
 
 
 def getnfd(addr):
@@ -44,8 +46,8 @@ def check_rekey(indexer_client, address):
             for transaction in payload["transactions"]:
                 if "rekey-to" in transaction and transaction["sender"] == address:
                     isRekeyed = True
-                    print("Account: " + address + " rekeyed to " +
-                          transaction["rekey-to"] + " in round: " + str(transaction["confirmed-round"]))
+                    # print("Account: " + address + " rekeyed to " +
+                    #       transaction["rekey-to"] + " in round: " + str(transaction["confirmed-round"]))
 
             next_token = payload.get('next-token', None)
             if next_token is None:
@@ -85,7 +87,7 @@ def get_holders(indexer_client, creator):
                 payload = indexer_client.asset_balances(
                     asset_id, next_page=next_token)
                 for addr in payload["balances"]:
-                    if addr["amount"] > 0:
+                    if addr["amount"] == 0:
                         if not addr["address"] in addresses:
                             addresses.append(addr["address"])
                             print(addr)
@@ -99,34 +101,39 @@ def get_holders(indexer_client, creator):
     return addresses
 
 
-def get_transactions(indexer_client, address):
-    global block_height
-    last_round = block_height + 1
-    print("Getting transactions for round >= " + str(last_round))
-    next_token = None
-    while True:
-        try:
-            global found
-            payload = indexer_client.search_transactions_by_address(
-                address, next_page=next_token, min_round=block_height)
-            if len(payload["transactions"]):
-                if payload["transactions"][0]['confirmed-round'] > last_round:
-                    last_round = payload["transactions"][0]['confirmed-round']
-                print("Current transactions batch round: " +
-                      str(payload["transactions"][0]['confirmed-round']))
-            for transaction in payload["transactions"]:
-                if not transaction['sender'] in senders:
-                    senders.append(transaction['sender'])
-                    if transaction['sender'] in allholders:
-                        print("Holder Hit: " + getnfd(transaction['sender']))
+def get_transactions(indexer_client, addresses):
+    index = 0
+    for address in addresses:
+        global block_heights
+        last_round = block_heights[index] + 1
+        print("Getting transactions for address " +
+              addresses[index] + " for round >= " + str(last_round))
+        next_token = None
+        while True:
+            try:
+                global found
+                payload = indexer_client.search_transactions_by_address(
+                    address, next_page=next_token, min_round=block_heights[index])
+                if len(payload["transactions"]):
+                    if payload["transactions"][0]['confirmed-round'] > last_round:
+                        last_round = payload["transactions"][0]['confirmed-round']
+                    print("Current transactions batch round for address " + addresses[index] + ": " +
+                          str(payload["transactions"][0]['confirmed-round']))
+                for transaction in payload["transactions"]:
+                    if not transaction['sender'] in senders:
+                        senders.append(transaction['sender'])
+                        if transaction['sender'] in allholders:
+                            print("Holder Hit: " +
+                                  getnfd(transaction['sender']))
 
-            next_token = payload.get('next-token', None)
-            if next_token is None:
-                break
-        except Exception as e:
-            print(e)
+                next_token = payload.get('next-token', None)
+                if next_token is None:
+                    break
+            except Exception as e:
+                print(e)
 
-    block_height = last_round
+        block_heights[index] = last_round
+        index = index + 1
 
 
 def load_holders(indexer_client):
@@ -137,6 +144,7 @@ def load_holders(indexer_client):
             if not check_rekey(indexer_client, holder):
                 if not holder in allholders:
                     allholders.append(holder)
+                    print("Address not rekeyed: " + holder)
 
 
 def doit():
@@ -146,10 +154,10 @@ def doit():
         indexer_token="", indexer_address=MAINNET_INDEXER_API)
     load_holders(idx_client)
     print(allholders)
-    get_transactions(idx_client, _maladdress)
+    get_transactions(idx_client, _maladdresses)
     while 1 == 1:  # loop forever
         print("Checking Transactions")
-        get_transactions(idx_client, _maladdress)
+        get_transactions(idx_client, _maladdresses)
         time.sleep(60)
 
 
