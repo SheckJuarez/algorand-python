@@ -159,8 +159,7 @@ def get_transactions(indexer_client, address):
 						if note["rId"] not in raffleids and parser.parse(note["rEnd"]) >= utc.localize(datetime.datetime.now()):
 							raffleids.append(note["rId"])
 					else:
-						if transaction["sender"] not in entrants:
-							entrants.append({'entrant': transaction["sender"], 'rId': note["rId"]})
+						entrants.append({'entrant': transaction["sender"], 'rId': note["rId"]})
 
 
 				i = i + 1
