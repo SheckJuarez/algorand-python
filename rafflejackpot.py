@@ -4,6 +4,7 @@ import requests
 from algosdk import account, mnemonic
 from algosdk.v2client import indexer, algod
 from algosdk.future import transaction
+from algosdk.future.transaction import AssetConfigTxn, AssetTransferTxn, AssetFreezeTxn, wait_for_confirmation
 import json
 import sys
 import time
@@ -28,7 +29,6 @@ found = False
 
 naniteid = 891443534
 raffleaddresses = ["XBKKRZEKKCRAOZWAU34X6FTKEYNXK46NXETOWF6ZPGXB7QHLBRNMWD5BXY", "L4XNMTND6W3U7UI57K4K3H7OA62527M6L2A5Y5K34WLHADVPXSFPLAGUOE"]
-#raffleaddresses = ["L4XNMTND6W3U7UI57K4K3H7OA62527M6L2A5Y5K34WLHADVPXSFPLAGUOE"]
 raffleids = []
 entrants = []
 
@@ -38,7 +38,7 @@ startblock = sys.maxsize
 endblock = sys.maxsize
 
 
-def sendnanite(algod_client, winner, amt)
+def sendnanite(algod_client, winner, amt):
 	global mnemonic_secret
 	global naniteid
 
@@ -60,6 +60,7 @@ def sendnanite(algod_client, winner, amt)
 				sp=params,
 				receiver=winner,
 				amt=amt,
+				note="Project R4V3N Raffle Jackpot (Testing) " + str(datetime.datetime.now())[0:16],
 				index=naniteid)
 		stxn = txn.sign(sk)
 		txid = algod_client.send_transaction(stxn)
@@ -73,13 +74,14 @@ def sendnanite(algod_client, winner, amt)
 
 	return resp
 
+
 def pickwinner(indexer_client, entries):
 	winner = None
 	winner = entries[random.randint(0, len(entries)-1)]
 	if optedintonanite(indexer_client, winner):
 		return winner
 	else:
-		pickwinner(entries)
+		pickwinner(indexer_client, entries)
 
 	return winner
 
@@ -172,6 +174,14 @@ def get_transactions(indexer_client, address):
 	except Exception as e:
 		print(e)
 		print (sys.exc_info())
+
+def load_holders(indexer_client):
+	global allholders
+	for coll in collections:
+		holders = get_holders(indexer_client, coll)
+		for holder in holders:
+			if not holder in allholders:
+				allholders.append(holder)
 
 
 
