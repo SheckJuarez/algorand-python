@@ -174,15 +174,6 @@ def get_transactions(indexer_client, address):
 		print(e)
 		print (sys.exc_info())
 
-def load_holders(indexer_client):
-	global allholders
-	for coll in collections:
-		holders = get_holders(indexer_client, coll)
-		for holder in holders:
-			if not holder in allholders:
-				allholders.append(holder)
-
-
 
 def doit():
 	global started
