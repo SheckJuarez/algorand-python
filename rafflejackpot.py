@@ -22,7 +22,6 @@ algod_client = algod.AlgodClient(algod_token=algod_token, algod_address=algod_ad
 mnemonic_secret = "25 words" #Sender WOOTXGEMSBI5X5C5CR6QBS4CH2ULCKR5Y3AVNY7C6X2YZZE7O4AKLSAPRM
 
 
-dest_acct = "The account address to send assets to"
 MAINNET_NODE_API = "https://mainnet-api.algonode.cloud"
 MAINNET_INDEXER_API = "https://mainnet-idx.algonode.cloud"
 found = False
@@ -139,7 +138,7 @@ def get_transactions(indexer_client, address):
 				payload = indexer_client.search_transactions_by_address(address, min_round=startblock, max_round=endblock, next_page=next_token)
 
 			i = 0
-			print (startblock)
+
 			for transaction in payload["transactions"]:
 				if i == 0:
 					endblock = transaction["confirmed-round"]
