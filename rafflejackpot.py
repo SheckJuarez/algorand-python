@@ -80,7 +80,7 @@ def pickwinner(indexer_client, entries):
 	if optedintonanite(indexer_client, winner):
 		return winner
 	else:
-		pickwinner(indexer_client, entries)
+		winner = pickwinner(indexer_client, entries)
 
 	return winner
 
