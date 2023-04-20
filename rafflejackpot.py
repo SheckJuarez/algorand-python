@@ -80,6 +80,7 @@ def pickwinner(indexer_client, entries):
 	if optedintonanite(indexer_client, winner):
 		return winner
 	else:
+		print (winner + " not opted into NANITE. Rerolling...")
 		winner = pickwinner(indexer_client, entries)
 
 	return winner
