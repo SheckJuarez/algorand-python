@@ -97,11 +97,12 @@ def cleanentrants(raffleids, entrants):
 def optedintonanite(indexer_client, address):
 	resp = False
 
-	payload = indexer_client.account_info(address=address)
-	for asset in payload["account"]["assets"]:
+	payload = indexer_client.lookup_account_assets(address=address, asset_id=naniteid)
+	for asset in payload["assets"]:
 		if asset["asset-id"] == naniteid:
 			resp = True
 			break
+
 	return resp
 
 
