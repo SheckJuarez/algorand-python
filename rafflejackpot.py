@@ -160,8 +160,10 @@ def get_transactions(indexer_client, address):
 						if note["rId"] not in raffleids and parser.parse(note["rEnd"]) >= utc.localize(datetime.datetime.now()):
 							raffleids.append(note["rId"])
 					else:
-						entrants.append({'entrant': transaction["sender"], 'rId': note["rId"]})
-
+						if "asset-transfer-transaction" in transaction:
+							if transaction["asset-transfer-transaction"]["amount"] > 0:
+								entrants.append({'entrant': transaction["sender"], 'rId': note["rId"]})
+						
 
 				i = i + 1
 				next_token = payload.get('next-token', None)
