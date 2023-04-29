@@ -87,7 +87,7 @@ def pickwinner(indexer_client, entries):
 	return winner
 
 
-def validateentrytx(rTicketAsId, rTicketCost, rTicketsMax, tAssetID, tAmt, debuga, debugb):
+def validateentrytx(rTicketAsId, rTicketCost, rTicketsMax, tAssetID, tAmt):
 
 	resp = rTicketAsId == tAssetID
 	resp = resp and  tAmt <= rTicketsMax * rTicketCost
