@@ -22,13 +22,14 @@ algod_client = algod.AlgodClient(algod_token=algod_token, algod_address=algod_ad
 mnemonic_secret = "25 words" #Sender WOOTXGEMSBI5X5C5CR6QBS4CH2ULCKR5Y3AVNY7C6X2YZZE7O4AKLSAPRM
 
 
+dest_acct = "The account address to send assets to"
 MAINNET_NODE_API = "https://mainnet-api.algonode.cloud"
 MAINNET_INDEXER_API = "https://mainnet-idx.algonode.cloud"
 found = False
 
 naniteid = 891443534
 raffleaddresses = ["XBKKRZEKKCRAOZWAU34X6FTKEYNXK46NXETOWF6ZPGXB7QHLBRNMWD5BXY", "L4XNMTND6W3U7UI57K4K3H7OA62527M6L2A5Y5K34WLHADVPXSFPLAGUOE"]
-raffleids = []
+raffleids = {}
 entrants = []
 
 started = False
@@ -59,7 +60,7 @@ def sendnanite(algod_client, winner, amt):
 				sp=params,
 				receiver=winner,
 				amt=amt,
-				note="Project R4V3N Raffle Jackpot (Testing) " + str(datetime.datetime.now())[0:16],
+				note="Project R4V3N Raffle Jackpot " + str(datetime.datetime.now())[0:19],
 				index=naniteid)
 		stxn = txn.sign(sk)
 		txid = algod_client.send_transaction(stxn)
@@ -86,16 +87,27 @@ def pickwinner(indexer_client, entries):
 	return winner
 
 
+def validateentrytx(rTicketAsId, rTicketCost, rTicketsMax, tAssetID, tAmt, debuga, debugb):
+
+	resp = rTicketAsId == tAssetID
+	resp = resp and  tAmt <= rTicketsMax * rTicketCost
+	resp = resp and tAmt % rTicketCost == 0
+
+	return resp
+
+
+
 def cleanentrants(raffleids, entrants):
 	entries = []
 	for entrant in entrants:
 		if entrant["rId"] in raffleids:
-			if entrant["entrant"] not in entries:
+			if validateentrytx(raffleids[entrant["rId"]]["rTicketAsId"], raffleids[entrant["rId"]]["rTicketCost"], raffleids[entrant["rId"]]["rTicketsMax"], entrant["asset-id"], entrant["amt"]) and entrant["entrant"] not in entries:
 				entries.append(entrant["entrant"])
 	return entries
 
 def optedintonanite(indexer_client, address):
 	resp = False
+
 
 	payload = indexer_client.lookup_account_assets(address=address, asset_id=naniteid)
 	for asset in payload["assets"]:
@@ -130,7 +142,6 @@ def get_transactions(indexer_client, address):
 		global startblock
 		global endblock
 		next_token = None
-		senders = []
 
 		while startblock > firstblock:
 			if started == False:
@@ -140,7 +151,6 @@ def get_transactions(indexer_client, address):
 				payload = indexer_client.search_transactions_by_address(address, min_round=startblock, max_round=endblock, next_page=next_token)
 
 			i = 0
-
 			for transaction in payload["transactions"]:
 				if i == 0:
 					endblock = transaction["confirmed-round"]
@@ -158,12 +168,12 @@ def get_transactions(indexer_client, address):
 				if "rId" in note:
 					if "rCreator" in note:
 						if note["rId"] not in raffleids and parser.parse(note["rEnd"]) >= utc.localize(datetime.datetime.now()):
-							raffleids.append(note["rId"])
+							raffleids[note["rId"]] = note
 					else:
 						if "asset-transfer-transaction" in transaction:
 							if transaction["asset-transfer-transaction"]["amount"] > 0:
-								entrants.append({'entrant': transaction["sender"], 'rId': note["rId"]})
-						
+								entrants.append({'entrant': transaction["sender"], 'rId': note["rId"], 'amt': transaction["asset-transfer-transaction"]["amount"], 'asset-id': transaction["asset-transfer-transaction"]["asset-id"]})
+
 
 				i = i + 1
 				next_token = payload.get('next-token', None)
@@ -176,6 +186,8 @@ def get_transactions(indexer_client, address):
 	except Exception as e:
 		print(e)
 		print (sys.exc_info())
+
+
 
 
 def doit():
@@ -199,7 +211,7 @@ def doit():
 	print ("##############################################################")
 	entries = cleanentrants(raffleids, entrants)
 	winner = pickwinner(idx_client, entries)
-	txid = sendnanite(algod_client, winner, 1)
+	txid = sendnanite(algod_client, winner, random.randint(100, 500))
 	print ("Transaction: " + str(txid))
 
 
