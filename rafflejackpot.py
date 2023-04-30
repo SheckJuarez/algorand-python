@@ -22,10 +22,8 @@ algod_client = algod.AlgodClient(algod_token=algod_token, algod_address=algod_ad
 mnemonic_secret = "25 words" #Sender WOOTXGEMSBI5X5C5CR6QBS4CH2ULCKR5Y3AVNY7C6X2YZZE7O4AKLSAPRM
 
 
-dest_acct = "The account address to send assets to"
 MAINNET_NODE_API = "https://mainnet-api.algonode.cloud"
 MAINNET_INDEXER_API = "https://mainnet-idx.algonode.cloud"
-found = False
 
 naniteid = 891443534
 raffleaddresses = ["XBKKRZEKKCRAOZWAU34X6FTKEYNXK46NXETOWF6ZPGXB7QHLBRNMWD5BXY", "L4XNMTND6W3U7UI57K4K3H7OA62527M6L2A5Y5K34WLHADVPXSFPLAGUOE"]
@@ -136,7 +134,6 @@ def get_transactions(indexer_client, address):
 		global raffleids
 		global entrants
 		global started
-		global found
 		global allholders
 		global firstblock
 		global startblock
@@ -195,8 +192,6 @@ def doit():
 	global firstblock
 	global startblock
 	global endblock
-	global found
-	global allholders
 	global raffleids
 	global algod_client
 
