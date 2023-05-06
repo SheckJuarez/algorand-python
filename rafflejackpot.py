@@ -80,6 +80,7 @@ def pickwinner(indexer_client, entries):
 		return winner
 	else:
 		print (winner + " not opted into NANITE. Picking new winner...")
+		entries.remove(winner)
 		winner = pickwinner(indexer_client, entries)
 
 	return winner
