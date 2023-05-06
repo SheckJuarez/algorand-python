@@ -140,7 +140,7 @@ def get_transactions(indexer_client, address):
 		global startblock
 		global endblock
 		next_token = None
-		note = ""
+		note = None
 
 		while startblock > firstblock:
 			if started == False:
@@ -159,7 +159,7 @@ def get_transactions(indexer_client, address):
 
 				if "note" in transaction:
 					try:
-						note = ""
+						note = None
 						note = json.loads(base64.b64decode(transaction["note"]).decode('utf-8'))
 					except ValueError as e:
 						pass
