@@ -140,7 +140,7 @@ def get_transactions(indexer_client, address):
 		global startblock
 		global endblock
 		next_token = None
-		note = None
+		note = ""
 
 		while startblock > firstblock:
 			if started == False:
