@@ -1,10 +1,13 @@
 #!/usr/bin/python3.9
+
+
+from algosdk.v2client import indexer, algod
+from algosdk.future.transaction import AssetConfigTxn, AssetTransferTxn, AssetFreezeTxn, wait_for_confirmation
+from algosdk import account, mnemonic
+from algosdk import transaction
+
 import sys, os
 import requests
-from algosdk import account, mnemonic
-from algosdk.v2client import indexer, algod
-from algosdk.future import transaction
-from algosdk.future.transaction import AssetConfigTxn, AssetTransferTxn, AssetFreezeTxn, wait_for_confirmation
 import json
 import sys
 import time
@@ -16,14 +19,26 @@ import random
 
 utc=pytz.UTC
 
-algod_address = "algod.net"
+def getalgodnet():
+	try:
+		with open("/var/lib/algorand/algod.net", 'r') as file:
+			algod_url = "http://" + file.read().strip()
+			return algod_url
+	except FileNotFoundError:
+		print(f"File '{file_path}' not found.")
+		return None
+
+
+algod_address = getalgodnet()
 algod_token = "algod.token"
 algod_client = algod.AlgodClient(algod_token=algod_token, algod_address=algod_address)
-mnemonic_secret = "25 words" #Sender WOOTXGEMSBI5X5C5CR6QBS4CH2ULCKR5Y3AVNY7C6X2YZZE7O4AKLSAPRM
+mnemonic_secret = "" #Sender WOOTXGEMSBI5X5C5CR6QBS4CH2ULCKR5Y3AVNY7C6X2YZZE7O4AKLSAPRM
 
 
+dest_acct = "The account address to send assets to"
 MAINNET_NODE_API = "https://mainnet-api.algonode.cloud"
 MAINNET_INDEXER_API = "https://mainnet-idx.algonode.cloud"
+found = False
 
 naniteid = 891443534
 raffleaddresses = ["XBKKRZEKKCRAOZWAU34X6FTKEYNXK46NXETOWF6ZPGXB7QHLBRNMWD5BXY", "L4XNMTND6W3U7UI57K4K3H7OA62527M6L2A5Y5K34WLHADVPXSFPLAGUOE"]
@@ -31,9 +46,22 @@ raffleids = {}
 entrants = []
 
 started = False
-firstblock = 23642751
+#firstblock = 23642751
+firstblock = 28000000
 startblock = sys.maxsize
 endblock = sys.maxsize
+
+
+def getnfd(addr):
+	data = None
+	nfd = addr
+	url = "https://api.nf.domains/nfd/v2/address?address=" + addr
+	resp = requests.get(url=url)
+	if resp.status_code == 200:
+		data = resp.json()
+		nfd = data[addr][0]["name"]
+
+	return nfd
 
 
 def sendnanite(algod_client, winner, amt):
@@ -45,8 +73,8 @@ def sendnanite(algod_client, winner, amt):
 	try:
 
 
-		pk = mnemonic.to_public_key(mnemonic_secret)
 		sk = mnemonic.to_private_key(mnemonic_secret)
+		pk = account.address_from_private_key(sk)
 
 		params = algod_client.suggested_params()
 		params.fee = 1000
@@ -76,7 +104,7 @@ def sendnanite(algod_client, winner, amt):
 def pickwinner(indexer_client, entries):
 	winner = None
 	winner = entries[random.randint(0, len(entries)-1)]
-	if optedintonanite(indexer_client, winner):
+	if optedintonanite(indexer_client, winner): ###and not getnfd(winner) == winner:
 		return winner
 	else:
 		print (winner + " not opted into NANITE. Picking new winner...")
@@ -93,7 +121,6 @@ def validateentrytx(rTicketAsId, rTicketCost, rTicketsMax, tAssetID, tAmt):
 	resp = resp and tAmt % rTicketCost == 0
 
 	return resp
-
 
 
 def cleanentrants(raffleids, entrants):
@@ -116,25 +143,12 @@ def optedintonanite(indexer_client, address):
 
 	return resp
 
-
-def getnfd(addr):
-	data = None
-#	nfd = addr
-	nfd = ""
-	url = "https://api.nf.domains/nfd/v2/address?address=" + addr
-	resp = requests.get(url=url)
-	if resp.status_code == 200:
-		data = resp.json()
-		nfd = data[addr][0]["name"]
-
-	return nfd
-
-
 def get_transactions(indexer_client, address):
 	try:
 		global raffleids
 		global entrants
 		global started
+		global found
 		global allholders
 		global firstblock
 		global startblock
@@ -159,7 +173,7 @@ def get_transactions(indexer_client, address):
 
 				if "note" in transaction:
 					try:
-						note = None
+						note = ""
 						note = json.loads(base64.b64decode(transaction["note"]).decode('utf-8'))
 					except ValueError as e:
 						pass
@@ -188,12 +202,13 @@ def get_transactions(indexer_client, address):
 
 
 
-
 def doit():
 	global started
 	global firstblock
 	global startblock
 	global endblock
+	global found
+	global allholders
 	global raffleids
 	global algod_client
 
@@ -208,7 +223,7 @@ def doit():
 	print ("##############################################################")
 	entries = cleanentrants(raffleids, entrants)
 	winner = pickwinner(idx_client, entries)
-	txid = sendnanite(algod_client, winner, random.randint(100, 500))
+	txid = sendnanite(algod_client, winner, random.randint(100, 300))
 	print ("Transaction: " + str(txid))
 
 
