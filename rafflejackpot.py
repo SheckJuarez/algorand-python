@@ -215,7 +215,7 @@ def doit():
 	idx_client = indexer.IndexerClient(indexer_token="", indexer_address=MAINNET_INDEXER_API)
 	for raffleaddress in raffleaddresses:
 		started = False
-		firstblock = 23642751
+		firstblock = 31345695
 		startblock = sys.maxsize
 		endblock = sys.maxsize
 		get_transactions(idx_client, raffleaddress)
